@@ -1,2 +1,3 @@
 # plantplanet
-plant planet backend system
+To build
+#mvn clean install 
