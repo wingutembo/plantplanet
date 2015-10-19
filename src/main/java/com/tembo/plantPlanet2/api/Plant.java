@@ -16,16 +16,12 @@ public class Plant extends Organism
 
 	private static Logger logger = Logger.getLogger(Plant.class.getPackage().getName());
 
-	double usedNutrientStorageCapacity = 0.0;
 	double usedCO2StorageCapacity = 0.0;
 	double usedEnergyStorageCapacity = 0.0;
-	double usedSugarStorageCapacity = 0.0; 
 	
 	// Energy, CO2 cannot be stored
 	double maxEnergyAbsorbable = 10.0;
 	double maxCO2Absorbable = 10.0;
-	double maxNutrientsAbsorbable = 10.0;
-	double maxSugarStorable = 10.0;
 	
 	/** 
 	 * World Constructor use defaults
@@ -226,6 +222,27 @@ public class Plant extends Organism
 		double biomass = maxEnergyAbsorbable + maxCO2Absorbable + maxNutrientsAbsorbable + maxSugarStorable + maxWaterAbsorbable;
 		return biomass;
 	}
+	
+	/**
+	 * The number of units to grow by
+	 * @return
+	 */
+	protected int growthIncrement()
+	{
+		// Sugar + water
+		return super.growthIncrement()+2;
+	}
+	
+	/**
+	 * Add 1 unit to all the resources
+	 */
+	protected void growByOne()
+	{
+		super.growByOne();
+		maxEnergyAbsorbable++;
+		maxCO2Absorbable++;
+	}
+
 
 }
 

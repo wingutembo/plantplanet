@@ -1,30 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0">
-    <modelVersion>4.0.0</modelVersion>
-    
-    <parent>
-        <artifactId>master</artifactId>
-        <groupId>root</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
+	<modelVersion>4.0.0</modelVersion>
+   
+	<groupId>theTembo.plantPlanet</groupId>
+	<artifactId>plantPlanet</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<name>plantPlanet</name>
+	<url>http://maven.apache.org</url>
 
-  <groupId>root.plantPlanet1</groupId>
-  <artifactId>plantPlanet1</artifactId>
-
-  <name>plantPlanet1</name>
-  <url>http://maven.apache.org</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-	<maven.resources.plugin.version>2.6</maven.resources.plugin.version>
-  </properties>
+	<properties>
+		<log4j.version>1.2.17</log4j.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
+		<maven.resources.plugin.version>2.6</maven.resources.plugin.version>
+		<junit.version>4.11</junit.version>
+	</properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
         <dependency>
@@ -75,6 +72,12 @@
   				<artifactId>maven-resources-plugin</artifactId>
 				<version>${maven.resources.plugin.version}</version>
   			</plugin>
+			<plugin>
+                <groupId>org.apache.maven.surefire</groupId>
+                <artifactId>surefire-junit4</artifactId>
+                <version>2.12.4</version>
+            </plugin>
   		</plugins>
     </build>
+
 </project>

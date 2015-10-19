@@ -60,6 +60,15 @@ public class App
 
     	// Schedule the creation of stored energy
     	sim.scheduleContinuousActivity("StoreEnergy", 1.0, 6, p.new StoreEnergy());
+    	
+    	// Hunt
+    	
+    	//  Digest
+    	
+    	// 
+
+    	// Schedule the creation of stored energy
+    	sim.scheduleContinuousActivity("Grow", 1.0, 7, w.new Grow());
 
     	// Schedule the report for once a day, after everything else is update
     	sim.scheduleContinuousActivity("Report", 24.0, 100, w.new Report());

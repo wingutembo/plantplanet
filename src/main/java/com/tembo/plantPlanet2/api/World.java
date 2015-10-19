@@ -340,7 +340,7 @@ public class World {
 		
 	}
 	
-	////////////////////////////////////////////////////////////////// Allocate to Resources to Plants
+	////////////////////////////////////////////////////////////////// Allocate to Resources to Organisms
 	public class AllocateResources implements ISimObj
 	{
 
@@ -428,7 +428,63 @@ public class World {
 		}
 		
 	}
+	
+	/**
+	 * 
+	 * @author angelmi
+	 *
+	 */
+	public class Grow implements ISimObj
+	{
 
+		@Override
+		public void execute(String eventName, double currentTime, int priority,
+				Sim sim) throws SimSchedulingException, OutOfWaterException, OutOfEnergyException, OutOfNutrientsException, OutOfAirException, OutOfLifeException 
+		{
+			for(Plant p : plants)
+			{
+				p.grow();
+			}
+			
+			for(Animal a : animals)
+			{
+				a.grow();
+			}
+			
+			for(Decomposer d : decomposers)
+			{
+				d.grow();
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @author angelmi
+	 *
+	 */
+	public class Hunt implements ISimObj
+	{
+
+		@Override
+		public void execute(String eventName, double currentTime, int priority,
+				Sim sim) throws SimSchedulingException, OutOfWaterException, OutOfEnergyException, OutOfNutrientsException, OutOfAirException, OutOfLifeException 
+		{
+			for(Animal a : animals)
+			{
+				int nPlants = plants.size();
+				
+				a.hunt();
+			}
+			
+		}
+	}
+
+	/**
+	 * 
+	 * @author angelmi
+	 *
+	 */
 	public class Report implements ISimObj
 	{
 		@Override
