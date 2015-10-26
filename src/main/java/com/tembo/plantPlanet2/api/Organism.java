@@ -1,15 +1,34 @@
 package com.tembo.plantPlanet2.api;
 
+import com.tembo.plantPlanet2.OutOfAirException;
+import com.tembo.plantPlanet2.OutOfEnergyException;
+import com.tembo.plantPlanet2.OutOfLifeException;
+import com.tembo.plantPlanet2.OutOfNutrientsException;
+import com.tembo.plantPlanet2.OutOfWaterException;
+import com.tembo.simkern.SimObj;
+import com.tembo.simkern.Sim;
+import com.tembo.simkern.SimSchedulingException;
+
 public abstract class Organism {
 
 	protected World world;
+	
+	private static long orgCounter = 1;
 
+	// Organizm identifier
+	private long orgId;
+	
+	public long getOrgId()
+	{
+		return orgId;
+	}
+	
 	/**
 	 * Default constructor is null
 	 */
 	private Organism()
 	{
-		
+		orgId = orgCounter++;
 	}
 	
 	/**
@@ -18,12 +37,20 @@ public abstract class Organism {
 	 */
 	public Organism(World world)
 	{
+		orgId = orgCounter++;
 		this.world = world;
 	}
 
 
 	double usedWaterStorageCapacity = 0.0;
 	double maxWaterAbsorbable = 10.0;
+
+	/**
+	 * @return the usedWaterStorageCapacity
+	 */
+	public double getUsedWaterStorageCapacity() {
+		return usedWaterStorageCapacity;
+	}
 
 	/**
 	 * everything drinks the water
@@ -46,14 +73,31 @@ public abstract class Organism {
 	 * everything has biomass
 	 * @return the computed biomass (size)
 	 */
-	public abstract double biomass();
+	public double biomass()
+	{
+		return maxSugarStorable + maxNutrientsAbsorbable + maxWaterAbsorbable;
+	}
 	
 	/** 
 	 * Sugar Queue
 	 * 
 	 */
-	double usedSugarStorageCapacity = 0.0; 
+	double usedSugarStorageCapacity = 10.0; 
 	double maxSugarStorable = 10.0;
+
+	/**
+	 * @return the usedSugarStorageCapacity
+	 */
+	public double getUsedSugarStorageCapacity() {
+		return usedSugarStorageCapacity;
+	}
+
+	/**
+	 * @return the maxSugarStorable
+	 */
+	public double getMaxSugarStorable() {
+		return maxSugarStorable;
+	}
 
 	/**
 	 * Mineral Queue
@@ -61,6 +105,19 @@ public abstract class Organism {
 	double usedNutrientStorageCapacity = 0.0;
 	double maxNutrientsAbsorbable = 10.0;
 
+	/**
+	 * @return the usedNutrientStorageCapacity
+	 */
+	public double getUsedNutrientStorageCapacity() {
+		return usedNutrientStorageCapacity;
+	}
+
+	/**
+	 * @return the maxNutrientsAbsorbable
+	 */
+	public double getMaxNutrientsAbsorbable() {
+		return maxNutrientsAbsorbable;
+	}
 	
 	/**
 	 * Everything grows.
@@ -104,4 +161,49 @@ public abstract class Organism {
 		maxSugarStorable++;
 		maxNutrientsAbsorbable++;
 	}
+
+	/**
+	 * 
+	 * @param sim
+	 */
+	public void unscheduleAllActivities(Sim sim) 
+	{
+		if(grow != null)
+		{
+			sim.cancelSchedulable(grow.getActivityId());
+			grow = null;
+		}
+	}
+	
+	private Grow grow;
+	
+	/**
+	 * Will create a "Grow" object
+	 * @return a grow
+	 */
+	public SimObj createGrow() 
+	{
+		if(this.grow == null)
+		{
+			this.grow = this.new Grow();
+		}
+		return this.grow;
+	}
+		
+	/**
+	 * 
+	 * @author angelmi
+	 *
+	 */
+	public class Grow extends SimObj
+	{
+
+		@Override
+		public void execute(String eventName, double currentTime, int priority,
+				Sim sim) throws SimSchedulingException, OutOfWaterException, OutOfEnergyException, OutOfNutrientsException, OutOfAirException, OutOfLifeException 
+		{
+			grow();
+		}
+	}
+
 }

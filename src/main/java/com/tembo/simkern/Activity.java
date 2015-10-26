@@ -18,7 +18,7 @@ public class Activity extends Schedulable
 	 * @param priority - the priority relative to other activitys scheduled at same time
 	 * @param simObj - the object passed back at sim time
 	 */
-	Activity(String activityName, double time, int priority, ISimObj simObj)
+	Activity(String activityName, double time, int priority, SimObj simObj)
 	{
 		super(activityName,time,priority,simObj);
 		this.bAutoReschedule = true;
@@ -35,7 +35,7 @@ public class Activity extends Schedulable
 	 */
 	public void executeActivity(double currentSimTime, Activity nextScheduledActivity, Sim sim) throws SimSchedulingException, OutOfResourceException 
 	{
-		ISimObj theSimObj = nextScheduledActivity.simObj;
+		SimObj theSimObj = nextScheduledActivity.simObj;
 		theSimObj.execute(name,currentSimTime,priority,sim);		
 	}
 

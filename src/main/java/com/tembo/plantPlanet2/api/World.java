@@ -13,7 +13,7 @@ import com.tembo.plantPlanet2.OutOfEnergyException;
 import com.tembo.plantPlanet2.OutOfLifeException;
 import com.tembo.plantPlanet2.OutOfNutrientsException;
 import com.tembo.plantPlanet2.OutOfWaterException;
-import com.tembo.simkern.ISimObj;
+import com.tembo.simkern.SimObj;
 import com.tembo.simkern.Sim;
 import com.tembo.simkern.SimSchedulingException;
 
@@ -23,11 +23,12 @@ public class World {
     {
         ConsoleAppender ap = new ConsoleAppender();
         ap.setWriter(new OutputStreamWriter(System.err));
-        ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        // ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        ap.setLayout(new PatternLayout("%m%n"));
         logger.removeAllAppenders();
         logger.addAppender(ap);
         
-        logger.setLevel(Level.ALL);
+        logger.setLevel(Level.DEBUG);
 
     }
 
@@ -42,9 +43,7 @@ public class World {
 	public double maxWater = MAX_WET_SEASON_WATER;
 
 	private double freeEnergy = MAX_FREE_ENERGY;
-	private double freeWaste = 0;
-	private double freeDeath = 0;
-    
+	
 	/**
 	 * Default constructor, use all default values
 	 */
@@ -93,14 +92,6 @@ public class World {
 		return freeEnergy;
 	}
 	
-	public double getFreeWaste() {
-		return freeWaste;
-	}
-
-	public double getFreeDeath() {
-		return freeDeath;
-	}
-
     /**
      * 
      * @param dCO2 the delta loss of CO2
@@ -129,12 +120,12 @@ public class World {
     }
     
     /**
-     * This is waste sugar
-     * @param dWaste the change in waste
+     * 
+     * @param dO2 the delta gain in O2
      */
-    public void freeWaste(double dWaste)
+    public void freeO2(double dO2)
     {
-    	freeWaste += dWaste;
+    	freeO2 += dO2;
     }
     
     /**
@@ -191,6 +182,7 @@ public class World {
 	private LinkedList<Plant> plants = new LinkedList<Plant>();
 	private LinkedList<Animal> animals = new LinkedList<Animal>();
 	private LinkedList<Decomposer> decomposers = new LinkedList<Decomposer>();
+	private LinkedList<Waste> wastes = new LinkedList<Waste>(); // Organic waste is clumpy (?) 
 	
 	/**
 	 * create a plant
@@ -232,14 +224,53 @@ public class World {
 		return d;
 	}
 
+	/**
+	 * plant biomass
+	 * @return
+	 */
+	public double plantBiomass() {
+		double biomass = 0;
+		for(Plant p : plants)
+		{
+			biomass += p.biomass();
+		}
+		return biomass;
+	}
+	
+	/**
+	 * animal biomass
+	 * @return
+	 */
+	public double animalBiomass() {
+		double biomass = 0;
+		for(Animal a : animals)
+		{
+			biomass += a.biomass();
+		}
+		return biomass;
+	}
+
+	/**
+	 * Decomposer biomass
+	 * @return
+	 */
+	public double decomposerBiomass() {
+		double biomass = 0;
+		for(Decomposer d : decomposers)
+		{
+			biomass += d.biomass();
+		}
+		return biomass;
+	}
+
 	///////////////////////////////////////////////////////////////////// Energy in the day time, not the night
-	public class Night implements ISimObj
+	public class Night extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
 				Sim sim) throws SimSchedulingException 
 		{
-			logger.debug("Night time @ Day"+currentTime/24.0);
+			logger.trace("Night time @ Day"+currentTime/24.0);
 			
 			// Stop energy activity
 
@@ -255,43 +286,44 @@ public class World {
 
 	long energyActivityId;
 	
-	public class Day implements ISimObj
+	public class Day extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
 				Sim sim) throws SimSchedulingException 
 		{
 
-			logger.debug("Day time @ Day"+currentTime/24.0);
+			logger.trace("Day time @ Day"+currentTime/24.0);
 
 			// Schedule the next day
 			// For simplicity this is on 24 hour interval but could play with variable times later
 			sim.scheduleDiscreteEvent(eventName, 24.0, 1, this);
 			
 			// Start energy activity on one hour increments
-			energyActivityId = sim.scheduleContinuousActivity("Energy", 0.0, 1.0, priority, new Energy());
-			
+			Energy energy = new Energy();
+			sim.scheduleContinuousActivity("Energy", 0.0, 1.0, priority, energy);
+			energyActivityId = energy.getActivityId();
 		}
 		
 	}
 
-	class Energy implements ISimObj
+	class Energy extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
 				Sim sim) throws SimSchedulingException {
 
-			logger.debug("Energy Refresh@"+currentTime/24.0+" from " + freeEnergy + " to " + MAX_FREE_ENERGY);
+			logger.trace("Energy Refresh@"+currentTime/24.0+" from " + freeEnergy + " to " + MAX_FREE_ENERGY);
 
 			// Simple - Energy is always at maximum. Restore energy
 			freeEnergy = MAX_FREE_ENERGY;
 			
 		}
-		
+
 	}
 	
 	///////////////////////////////////////////////////////////////////// Water. Rain every couple of days change max in wet and dry. Treat water like an infinite resource.
-	public class Dry implements ISimObj
+	public class Dry extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
@@ -299,7 +331,7 @@ public class World {
 		{
 			maxWater = MAX_DRY_SEASON_WATER;
 					
-			logger.debug("Dry season @ Day"+currentTime/24.0);
+			logger.trace("Dry season @ Day"+currentTime/24.0);
 			
 
 			// Schedule next dry season in a year
@@ -309,7 +341,7 @@ public class World {
 		
 	}
 
-	public class Wet implements ISimObj
+	public class Wet extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
@@ -317,7 +349,7 @@ public class World {
 		{
 			maxWater = MAX_WET_SEASON_WATER;
 
-			logger.debug("Wet season @ Day"+currentTime/24.0);
+			logger.trace("Wet season @ Day"+currentTime/24.0);
 			
 			// Schedule next wet season in a year
 			sim.scheduleDiscreteEvent(eventName, 24.0*180.0, priority, this);
@@ -326,13 +358,13 @@ public class World {
 		
 	}
 
-	public class Rain implements ISimObj
+	public class Rain extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
 				Sim sim) throws SimSchedulingException {
 
-			logger.debug("Rain@"+currentTime/24.0+" from " + freeWater + " to " + maxWater);
+			logger.trace("Rain@"+currentTime/24.0+" from " + freeWater + " to " + maxWater);
 
 			freeWater = maxWater;
 			
@@ -341,7 +373,7 @@ public class World {
 	}
 	
 	////////////////////////////////////////////////////////////////// Allocate to Resources to Organisms
-	public class AllocateResources implements ISimObj
+	public class AllocateResources extends SimObj
 	{
 
 		@Override
@@ -434,58 +466,7 @@ public class World {
 	 * @author angelmi
 	 *
 	 */
-	public class Grow implements ISimObj
-	{
-
-		@Override
-		public void execute(String eventName, double currentTime, int priority,
-				Sim sim) throws SimSchedulingException, OutOfWaterException, OutOfEnergyException, OutOfNutrientsException, OutOfAirException, OutOfLifeException 
-		{
-			for(Plant p : plants)
-			{
-				p.grow();
-			}
-			
-			for(Animal a : animals)
-			{
-				a.grow();
-			}
-			
-			for(Decomposer d : decomposers)
-			{
-				d.grow();
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * @author angelmi
-	 *
-	 */
-	public class Hunt implements ISimObj
-	{
-
-		@Override
-		public void execute(String eventName, double currentTime, int priority,
-				Sim sim) throws SimSchedulingException, OutOfWaterException, OutOfEnergyException, OutOfNutrientsException, OutOfAirException, OutOfLifeException 
-		{
-			for(Animal a : animals)
-			{
-				int nPlants = plants.size();
-				
-				a.hunt();
-			}
-			
-		}
-	}
-
-	/**
-	 * 
-	 * @author angelmi
-	 *
-	 */
-	public class Report implements ISimObj
+	public class Report extends SimObj
 	{
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
@@ -503,11 +484,39 @@ public class World {
 				logger.info("\tFree Energy: "+freeEnergy);
 
 				logger.info("\t# Plants: "+plants.size());
+				for(Plant p : plants)
+				{
+					logger.info("\t\tID = "+p.getOrgId());
+					logger.info("\t\t\tCO2    = "+p.usedCO2StorageCapacity+" of "+p.maxCO2Absorbable);
+					logger.info("\t\t\tH2O    = "+p.usedWaterStorageCapacity+" of "+p.maxWaterAbsorbable);
+					logger.info("\t\t\tN      = "+p.usedNutrientStorageCapacity+" of "+p.maxNutrientsAbsorbable);
+					logger.info("\t\t\tSugar  = "+p.usedSugarStorageCapacity+" of "+p.maxSugarStorable);
+					logger.info("\t\t\tEnergy = "+p.usedEnergyStorageCapacity+" of "+p.maxEnergyAbsorbable);
+				}
 				logger.info("\t# Animals: "+animals.size());
+				for(Animal a : animals)
+				{
+					logger.info("\t\tID = "+a.getOrgId());
+					logger.info("\t\t\tO2    = "+a.usedO2StorageCapacity+" of "+a.maxO2Absorbable);
+					logger.info("\t\t\tH2O    = "+a.usedWaterStorageCapacity+" of "+a.maxWaterAbsorbable);
+					logger.info("\t\t\tN      = "+a.usedNutrientStorageCapacity+" of "+a.maxNutrientsAbsorbable);
+					logger.info("\t\t\tSugar  = "+a.usedSugarStorageCapacity+" of "+a.maxSugarStorable);
+				}
 				logger.info("\t# Decomposers: "+decomposers.size());
+				for(Decomposer d : decomposers)
+				{
+					logger.info("\t\tID = "+d.getOrgId());
+					logger.info("\t\t\tO2    = "+d.usedO2StorageCapacity+" of "+d.maxO2Absorbable);
+					logger.info("\t\t\tH2O    = "+d.usedWaterStorageCapacity+" of "+d.maxWaterAbsorbable);
+					logger.info("\t\t\tN      = "+d.usedNutrientStorageCapacity+" of "+d.maxNutrientsAbsorbable);
+					logger.info("\t\t\tSugar  = "+d.usedSugarStorageCapacity+" of "+d.maxSugarStorable);
+				}
 				
-				logger.info("\tFree Waste: "+freeWaste);
-				logger.info("\tFree Death: "+freeDeath);
+				logger.info("\tWaste: "+World.this.wastes.size());
+				for(Waste w : wastes)
+				{
+					logger.info("\t\t\tWaste (n,s) = "+w.unusedN+","+w.unusedSugar);
+				}
 				
 				logger.info("\t# Plant Biomass: "+getPlantBiomass());
 				logger.info("\t# Animal Biomass: "+getAnimalBiomass());
@@ -544,7 +553,93 @@ public class World {
 		}
 		
 	}
-	
+
+	/**
+	 * Define size in terms of resource 
+	 * TODO: Define size in terms of density of resources?
+	 * @return
+	 */
+	public double getSize() {
+		return this.freeCO2 + this.freeO2;
+	}
+
+	/**
+	 * 
+	 * @param a the animal that consumes the plant
+	 */
+	public void consumePlant(Sim sim, Animal a) 
+	{
+		// Remove a plant from the plant list
+		Plant p = plants.removeFirst();
+		
+		// Unschedule all plant activities
+		p.unscheduleAllActivities(sim);
+		
+		// Give up resources
+		double usedSugar = p.getUsedSugarStorageCapacity();
+		double usedN = p.getUsedNutrientStorageCapacity();
+		double usedW = p.getUsedWaterStorageCapacity();
+		
+		// Consume resourses
+		double unusedSugar = a.consumeSugar(usedSugar);
+		double unusedN = a.consumeNutrients(usedN);
+		double unusedWater = a.drink(usedW);
+		
+		// Return unused to the world
+		this.freeWater += unusedWater;
+
+		// Get biomass
+		double biomass = p.biomass(); 
+		Waste unusedBiomass = a.digest(biomass);
+		if(unusedBiomass.notEmpty())
+		{
+		
+			unusedBiomass.unusedN += unusedN;
+			unusedBiomass.unusedSugar += unusedSugar;
+			
+			this.wastes.add(unusedBiomass);		
+		}		
+	}
+
+	public void freeSugar(double wasteSugar) {
+		if(wasteSugar > 0.0)
+		{
+			Waste unusedBiomass = new Waste(0.0,wasteSugar);		
+			this.wastes.add(unusedBiomass);
+		}
+	}
+
+	/**
+	 * Kill the animal.
+	 * Account for all the animal resources
+	 * 
+	 * @param a
+	 * @param sim
+	 */
+	public void killAnimal(Animal a, Sim sim) 
+	{
+		// Remove this animal from animal list
+		boolean bRemoved = animals.remove(a);
+		if(!bRemoved)
+		{
+			logger.warn("Killed animal not found on animal list");
+		}
+		
+		// Unschedule all animal activities
+		a.unscheduleAllActivities(sim);
+		
+		// Give up resources
+		double freedSugar = a.getUsedSugarStorageCapacity();
+		double freedN = a.getUsedNutrientStorageCapacity();
+		double freedW = a.getUsedWaterStorageCapacity();
+
+		// Make the structure available
+		Waste unusedBiomass = new Waste(freedN, freedSugar);
+		if(unusedBiomass.notEmpty())
+		{
+			this.wastes.add(unusedBiomass);
+		}
+	}
 
 }
 

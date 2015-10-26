@@ -20,7 +20,8 @@ public class Decomposer extends Organism {
 	@Override
 	public double biomass() 
 	{
-		double biomass = maxWaterAbsorbable;
+		double biomass = super.biomass();
+		biomass+= maxO2Absorbable;
 		return biomass;
 	}
 

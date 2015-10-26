@@ -18,11 +18,12 @@ public class Sim
     {
         ConsoleAppender ap = new ConsoleAppender();
         ap.setWriter(new OutputStreamWriter(System.err));
-        ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        // ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        ap.setLayout(new PatternLayout("%m%n"));
         logger.removeAllAppenders();
         logger.addAppender(ap);
         
-        logger.setLevel(Level.ALL);
+        logger.setLevel(Level.DEBUG);
 
     }
 
@@ -41,7 +42,7 @@ public class Sim
 	 * @throws SimSchedulingException
 	 * @return id 
 	 */
-	public long scheduleDiscreteEvent(String eventName, double delta, int priority, ISimObj simObj) throws SimSchedulingException
+	public long scheduleDiscreteEvent(String eventName, double delta, int priority, SimObj simObj) throws SimSchedulingException
 	{
 		Event event = new Event(eventName,delta,priority,simObj);
 		event.setFirstTime(currentSimTime+delta);
@@ -63,14 +64,13 @@ public class Sim
 	 * @param priority the priority to break ties in scheduling time
 	 * @param simObj the event object
 	 * @throws SimSchedulingException
-	 * @return id 
 	 */
-	public long scheduleContinuousActivity(String activityName, double increment, int priority, ISimObj simObj) throws SimSchedulingException
+	public void scheduleContinuousActivity(String activityName, double increment, int priority, SimObj simObj) throws SimSchedulingException
 	{
-		return this.scheduleContinuousActivity(activityName, 0.0, increment, priority, simObj);
+		this.scheduleContinuousActivity(activityName, 0.0, increment, priority, simObj);
 	}
 	
-	public long scheduleContinuousActivity(String activityName, double delta, double increment, int priority, ISimObj simObj) throws SimSchedulingException
+	public void scheduleContinuousActivity(String activityName, double delta, double increment, int priority, SimObj simObj) throws SimSchedulingException
 	{
 		Activity activity = new Activity(activityName,increment,priority,simObj);
 		activity.setFirstTime(this.currentSimTime+delta);
@@ -80,7 +80,7 @@ public class Sim
 		}
 		schedule.add(activity);
 		schedulables.put(activity.getId(), activity);
-		return activity.getId();
+		simObj.setActivityId(activity.getId());
 	}
 	
 	/**
@@ -120,12 +120,12 @@ public class Sim
 	 */
 	public void runSim(double endTime) throws SimSchedulingException
 	{
-		if(logger.isDebugEnabled())
+		if(logger.isTraceEnabled())
 		{
-			logger.debug("START");
+			logger.trace("START");
 			for(Schedulable s : this.schedule)
 			{
-				logger.debug(s);
+				logger.trace(s);
 			}
 		}
 		
@@ -196,7 +196,7 @@ public class Sim
 				logger.warn("Simulation terminated. Shouldn't be able to get here");
 			}
 		} catch (OutOfResourceException e) {
-			logger.info("Ran out of resource ",e);
+ 			logger.info("Ran out of resource ",e);
 		}
 	}
 

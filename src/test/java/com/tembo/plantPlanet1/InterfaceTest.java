@@ -71,7 +71,7 @@ public class InterfaceTest extends TestCase
         World w = new World(freeCO2, freeO2, freeWater, freeNutrients, freeEnergy);
 		Plant p = w.createPlant(maxEnergyAbsorbable,maxCO2Absorbable,maxNutrientsAbsorbable,maxSugarStorable,usedSugarStorageCapacity);
 		AllocateResources ar = w.new AllocateResources();
-		StoreEnergy se = p.new StoreEnergy();
+		StoreEnergy se = p.createStoreEnergy();
     	Sim sim = new Sim();
 
 		try {

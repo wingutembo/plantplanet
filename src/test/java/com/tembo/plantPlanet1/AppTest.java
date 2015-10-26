@@ -7,7 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import com.tembo.simkern.ISimObj;
+import com.tembo.simkern.SimObj;
 import com.tembo.simkern.Sim;
 import com.tembo.simkern.SimSchedulingException;
 
@@ -56,20 +56,18 @@ public class AppTest
      * @throws SimSchedulingException 
      * 
      */
-    long id = 0;
-    
     public void testSim() throws SimSchedulingException
     {
     	Sim sim = new Sim();
     	sim.scheduleDiscreteEvent("Event 1", 0.0, 1, new MyEvent());
     	sim.scheduleDiscreteEvent("Event 2", 0.0, 2, new MyEvent());
-    	id = sim.scheduleContinuousActivity("Activity 1", 1.0, 3, new MyActivity());
+    	sim.scheduleContinuousActivity("Activity 1", 1.0, 3, new MyActivity());
     	sim.scheduleContinuousActivity("Activity 2", 1.0, 4, new MyActivity());
     	
     	sim.runSim(100.0);
     }
 
-    class MyEvent implements ISimObj
+    class MyEvent extends SimObj
     {
     	int i = 1;
     	
@@ -84,7 +82,7 @@ public class AppTest
     	
     }
 
-    class MyActivity implements ISimObj
+    class MyActivity extends SimObj
     {
     	@Override
     	public void execute(String occurrenceName, double currentTime, int priority, Sim sim) throws SimSchedulingException 
@@ -94,7 +92,7 @@ public class AppTest
     		// Cancel Self
     		if(currentTime>=50.0 && priority==3)
     		{
-    			sim.cancelSchedulable(id);
+    			sim.cancelSchedulable(this.getActivityId());
     		}
     	}
     	

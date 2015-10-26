@@ -19,7 +19,7 @@ public class Event extends Schedulable
 	 * @param priority - the priority relative to other events scheduled at same time
 	 * @param simObj - the object passed back at sim time
 	 */
-	Event(String eventName, double time, int priority, ISimObj simObj)
+	Event(String eventName, double time, int priority, SimObj simObj)
 	{
 		super(eventName,time,priority,simObj);
 		this.bAutoReschedule = false;
@@ -36,7 +36,7 @@ public class Event extends Schedulable
 	 */
 	public void executeEvent(double currentSimTime, Event nextScheduledEvent, Sim sim) throws SimSchedulingException, OutOfResourceException 
 	{
-		ISimObj theEvent = nextScheduledEvent.simObj;
+		SimObj theEvent = nextScheduledEvent.simObj;
 		theEvent.execute(name,currentSimTime,priority,sim);		
 	}
 

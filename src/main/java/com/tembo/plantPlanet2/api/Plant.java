@@ -2,7 +2,7 @@ package com.tembo.plantPlanet2.api;
 
 import org.apache.log4j.Logger;
 
-import com.tembo.simkern.ISimObj;
+import com.tembo.simkern.SimObj;
 import com.tembo.simkern.Sim;
 import com.tembo.simkern.SimSchedulingException;
 
@@ -22,7 +22,8 @@ public class Plant extends Organism
 	// Energy, CO2 cannot be stored
 	double maxEnergyAbsorbable = 10.0;
 	double maxCO2Absorbable = 10.0;
-	
+
+
 	/** 
 	 * World Constructor use defaults
 	 */
@@ -54,13 +55,6 @@ public class Plant extends Organism
 	
 
 	/**
-	 * @return the usedNutrientStorageCapacity
-	 */
-	public double getUsedNutrientStorageCapacity() {
-		return usedNutrientStorageCapacity;
-	}
-
-	/**
 	 * @return the usedCO2StorageCapacity
 	 */
 	public double getUsedCO2StorageCapacity() {
@@ -75,13 +69,6 @@ public class Plant extends Organism
 	}
 
 	/**
-	 * @return the usedSugarStorageCapacity
-	 */
-	public double getUsedSugarStorageCapacity() {
-		return usedSugarStorageCapacity;
-	}
-
-	/**
 	 * @return the maxEnergyAbsorbable
 	 */
 	public double getMaxEnergyAbsorbable() {
@@ -93,20 +80,6 @@ public class Plant extends Organism
 	 */
 	public double getMaxCO2Absorbable() {
 		return maxCO2Absorbable;
-	}
-
-	/**
-	 * @return the maxNutrientsAbsorbable
-	 */
-	public double getMaxNutrientsAbsorbable() {
-		return maxNutrientsAbsorbable;
-	}
-
-	/**
-	 * @return the maxSugarStorable
-	 */
-	public double getMaxSugarStorable() {
-		return maxSugarStorable;
 	}
 
 	/**
@@ -161,19 +134,90 @@ public class Plant extends Organism
 	}
 
 	/**
+	 * Biomass is the sum of its components
+	 * @return the biomass
+	 */
+	@Override
+	public double biomass() 
+	{
+		double biomass = super.biomass();
+		biomass += maxEnergyAbsorbable + maxCO2Absorbable;
+		return biomass;
+	}
+	
+	/**
+	 * The number of units to grow by
+	 * @return
+	 */
+	protected int growthIncrement()
+	{
+		// Sugar + water
+		return super.growthIncrement()+2;
+	}
+	
+	/**
+	 * Add 1 unit to all the resources
+	 */
+	protected void growByOne()
+	{
+		super.growByOne();
+		maxEnergyAbsorbable++;
+		maxCO2Absorbable++;
+	}
+
+	private StoreEnergy storeEnergy;
+	
+	/**
+	 * Returns a store energy
+	 * @return
+	 */
+	public StoreEnergy createStoreEnergy()
+	{
+		if(this.storeEnergy == null)
+		{
+			this.storeEnergy = this.new StoreEnergy();
+		}
+		return this.storeEnergy;
+	}
+	
+	/**
+	 * 
+	 * @param sim
+	 */
+	@Override
+	public void unscheduleAllActivities(Sim sim) 
+	{
+		super.unscheduleAllActivities(sim);
+		
+		if(storeEnergy != null)
+		{
+			storeEnergy.unschedule(sim);
+			this.storeEnergy = null;
+		}
+	}
+
+	/**
 	 * Process the StoreEnergy event
 	 * 
 	 * @author angelmi
 	 *
 	 */
-	public class StoreEnergy implements ISimObj
+	public class StoreEnergy extends SimObj
 	{
+		/**
+		 * Default constructor can only be constructed by this object
+		 */
+		private StoreEnergy()
+		{
+			
+		}
+		
 		@Override
 		public void execute(String eventName, double currentTime, int priority,
 				Sim sim) throws SimSchedulingException 
 		{
 
-			logger.debug("Store Energy@"+currentTime/24.0);
+			logger.trace("Store Energy@"+currentTime/24.0);
 
 			// Equal parts CO2, H20, Energy make a unit of sugar			
 			double newSugar = Math.min(Math.min(usedEnergyStorageCapacity, usedCO2StorageCapacity), usedWaterStorageCapacity);
@@ -206,43 +250,13 @@ public class Plant extends Organism
 			usedCO2StorageCapacity = 0.0;
 			
 			// Excess sugar is donated to the world
-			world.freeWaste(wasteSugar);
+			world.freeSugar(wasteSugar); 
+			// O2 is by-product of each sugar made
+			world.freeO2(newSugar);
 			
 		}
 		
 	}
-
-	/**
-	 * Biomass is the sum of its components
-	 * @return the biomass
-	 */
-	@Override
-	public double biomass() 
-	{
-		double biomass = maxEnergyAbsorbable + maxCO2Absorbable + maxNutrientsAbsorbable + maxSugarStorable + maxWaterAbsorbable;
-		return biomass;
-	}
-	
-	/**
-	 * The number of units to grow by
-	 * @return
-	 */
-	protected int growthIncrement()
-	{
-		// Sugar + water
-		return super.growthIncrement()+2;
-	}
-	
-	/**
-	 * Add 1 unit to all the resources
-	 */
-	protected void growByOne()
-	{
-		super.growByOne();
-		maxEnergyAbsorbable++;
-		maxCO2Absorbable++;
-	}
-
 
 }
 

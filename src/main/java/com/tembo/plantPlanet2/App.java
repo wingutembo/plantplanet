@@ -24,11 +24,12 @@ public class App
     {
         ConsoleAppender ap = new ConsoleAppender();
         ap.setWriter(new OutputStreamWriter(System.err));
-        ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        // ap.setLayout(new PatternLayout("%d [%p|%c|%C{1}] %m%n"));
+        ap.setLayout(new PatternLayout("%m%n"));
         logger.removeAllAppenders();
         logger.addAppender(ap);
         
-        logger.setLevel(Level.ALL);
+        logger.setLevel(Level.DEBUG);
 
     }
 
@@ -59,16 +60,17 @@ public class App
     	sim.scheduleContinuousActivity("Allocate", 1.0, 5, w.new AllocateResources());
 
     	// Schedule the creation of stored energy
-    	sim.scheduleContinuousActivity("StoreEnergy", 1.0, 6, p.new StoreEnergy());
+    	sim.scheduleContinuousActivity("StoreEnergy", 1.0, 6, p.createStoreEnergy());
     	
-    	// Hunt
-    	
-    	//  Digest
+    	// Schedule the creation of stored energy
+    	sim.scheduleContinuousActivity("Grow", 1.0, 7, p.createGrow());
+    	sim.scheduleContinuousActivity("Grow", 1.0, 7, a.createGrow());
+    	sim.scheduleContinuousActivity("Grow", 1.0, 7, d.createGrow());
+
+    	// Hunt or Digest - Do one or the other
+    	sim.scheduleContinuousActivity("Hunt", 1.0, 8, a.createHunt());
     	
     	// 
-
-    	// Schedule the creation of stored energy
-    	sim.scheduleContinuousActivity("Grow", 1.0, 7, w.new Grow());
 
     	// Schedule the report for once a day, after everything else is update
     	sim.scheduleContinuousActivity("Report", 24.0, 100, w.new Report());

@@ -26,7 +26,7 @@ public class Schedulable  implements Comparable<Schedulable>
      * @param simObj
      * @param bAutoReschedule - time is increment
      */
-    public Schedulable(String name, double time, int priority, ISimObj simObj) 
+    public Schedulable(String name, double time, int priority, SimObj simObj) 
     {
 		this.deltaTime = time;
 		this.priority = priority;
@@ -45,7 +45,7 @@ public class Schedulable  implements Comparable<Schedulable>
 	 */
 	public void executeOccurrence(double currentSimTime, Schedulable nextScheduledOccurrence, Sim sim) throws SimSchedulingException, OutOfResourceException 
 	{
-		ISimObj simObj = nextScheduledOccurrence.simObj;
+		SimObj simObj = nextScheduledOccurrence.simObj;
 		simObj.execute(name,currentSimTime,priority,sim);		
 	}
 	
@@ -154,12 +154,12 @@ public class Schedulable  implements Comparable<Schedulable>
 		return name;
 	}
 	
-	protected ISimObj simObj;
+	protected SimObj simObj;
 	
 	/**
 	 * @return the simulation object
 	 */
-	ISimObj getSimObj()
+	SimObj getSimObj()
 	{
 		return simObj;
 	}
