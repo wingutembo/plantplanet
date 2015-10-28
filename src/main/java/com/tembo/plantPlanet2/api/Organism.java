@@ -100,6 +100,23 @@ public abstract class Organism {
 	}
 
 	/**
+	 * consume sugar
+	 * @param available - provided by the consumed
+	 * @return not used
+	 */
+	public double consumeSugar(double available) 
+	{
+		double absorbable = (maxSugarStorable - usedSugarStorageCapacity); 
+		if(absorbable>available)
+		{
+			absorbable = available;
+		}
+		usedSugarStorageCapacity += absorbable;
+		
+		return available - absorbable;
+	}
+
+	/**
 	 * Mineral Queue
 	 */
 	double usedNutrientStorageCapacity = 0.0;
@@ -120,6 +137,23 @@ public abstract class Organism {
 	}
 	
 	/**
+	 * absorb
+	 * 
+	 * @param usedN
+	 * @return
+	 */
+	public double consumeNutrients(double available) {
+		double absorbable = (maxNutrientsAbsorbable - usedNutrientStorageCapacity); 
+		if(absorbable>available)
+		{
+			absorbable = available;
+		}
+		usedNutrientStorageCapacity += absorbable;
+		
+		return available - absorbable;
+	}
+
+	/**
 	 * Everything grows.
 	 * Growth requires a sugar and an O2 and a mineral, gives off a CO2
 	 */	
@@ -128,14 +162,12 @@ public abstract class Organism {
 		int growthIncr = growthIncrement();
 
 		// Only grow if there is enough sugar and enough minerals to grow each resource
-		if(usedSugarStorageCapacity >= growthIncr && usedNutrientStorageCapacity >= growthIncr)
+		if(usedSugarStorageCapacity >= growthIncr && usedNutrientStorageCapacity >= growthIncr && usedWaterStorageCapacity >= growthIncr)
 		{
 			// Use up the sugars to grow
-			usedSugarStorageCapacity -= growthIncr;
 			usedNutrientStorageCapacity -= growthIncr;
-			
-			// Give off CO2
-			world.freeCO2(growthIncr);
+			usedSugarStorageCapacity -= growthIncr;
+			usedWaterStorageCapacity -= growthIncr;
 			
 			// Grow
 			growByOne();
@@ -204,6 +236,19 @@ public abstract class Organism {
 		{
 			grow();
 		}
+	}
+	
+	/**
+	 * 
+	 * @param amtOfEnergyUsed
+	 */
+	protected void useEnergy(double amtOfEnergyUsed)
+	{
+		// Always use a unit of energy for the hunt
+		usedSugarStorageCapacity -= amtOfEnergyUsed;
+		// Need to free a CO2;
+		world.freeCO2(1.0);
+
 	}
 
 }

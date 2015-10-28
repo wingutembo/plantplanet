@@ -94,24 +94,6 @@ public class World {
 	
     /**
      * 
-     * @param dCO2 the delta loss of CO2
-     * @throws OutOfAirException 
-     */
-    public void useCO2(double dCO2) throws OutOfAirException
-    {
-    	freeCO2 -= dCO2;
-    	
-    	if(freeCO2 < 0)
-    	{
-    		freeCO2 = 0;
-    		
-    		throw new OutOfAirException();
-    	}
-    	
-    }
-    
-    /**
-     * 
      * @param dCO2 the delta gain in CO2
      */
     public void freeCO2(double dCO2)
@@ -126,6 +108,42 @@ public class World {
     public void freeO2(double dO2)
     {
     	freeO2 += dO2;
+    }
+    
+    /**
+     * 
+     * @param nutrients the delta gain in nutrients
+     */
+    public void freeNutrients(double nutrients)
+    {
+    	freeNutrients += nutrients;
+    }
+    
+    /**
+     * 
+     * @param water the delta gain in water
+     */
+    public void freeWater(double water)
+    {
+    	freeWater += water;
+    }
+    
+    /**
+     * 
+     * @param dCO2 the delta loss of CO2
+     * @throws OutOfAirException 
+     */
+    public void useCO2(double dCO2) throws OutOfAirException
+    {
+    	freeCO2 -= dCO2;
+    	
+    	if(freeCO2 < 0)
+    	{
+    		freeCO2 = 0;
+    		
+    		throw new OutOfAirException();
+    	}
+    	
     }
     
     /**
@@ -262,6 +280,20 @@ public class World {
 		}
 		return biomass;
 	}
+	
+	/**
+	 * Decomposer biomass
+	 * @return
+	 */
+	public Waste wasteBiomass() {
+		Waste biomass = new Waste(0.0,0.0);
+		for(Waste w : wastes)
+		{
+			biomass.add(w);
+		}
+		return biomass;
+	}
+
 
 	///////////////////////////////////////////////////////////////////// Energy in the day time, not the night
 	public class Night extends SimObj
@@ -639,6 +671,61 @@ public class World {
 		{
 			this.wastes.add(unusedBiomass);
 		}
+	}
+
+	/**
+	 * Decomposers decompose waste
+	 * 
+	 * @param sim
+	 * @param decomposer
+	 */
+	public void consumeWaste(Sim sim, Decomposer decomposer) 
+	{
+		// Remove waste from the waste list
+		Waste w = wastes.removeFirst();
+		
+		// Give up resources
+		double usedSugar = w.unusedSugar;
+		double usedN = w.unusedN;
+		
+		// Consume resources
+		double unusedSugar = decomposer.consumeSugar(usedSugar);
+		double unusedN = decomposer.consumeNutrients(usedN);
+
+		// REturn N to the world
+		this.freeNutrients(unusedN);
+	}
+
+	/**
+	 * 
+	 * @param decomposer
+	 * @param sim
+	 */
+	public void killDecomposer(Decomposer decomposer, Sim sim) 
+	{
+		// Remove this animal from animal list
+		boolean bRemoved = decomposers.remove(decomposer);
+		if(!bRemoved)
+		{
+			logger.warn("Killed decomposer not found on decomposer list");
+		}
+		
+		// Unschedule all animal activities
+		decomposer.unscheduleAllActivities(sim);
+		
+		// Give up resources
+		double freedSugar = decomposer.getUsedSugarStorageCapacity();
+		double freedN = decomposer.getUsedNutrientStorageCapacity();
+		double freedW = decomposer.getUsedWaterStorageCapacity();
+
+		// Make the structure available
+		Waste unusedBiomass = new Waste(freedN, freedSugar);
+		if(unusedBiomass.notEmpty())
+		{
+			this.wastes.add(unusedBiomass);
+		}
+
+		freeWater(freedW);
 	}
 
 }

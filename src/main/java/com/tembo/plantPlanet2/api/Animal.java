@@ -60,40 +60,6 @@ public class Animal extends Organism
 	}
 
 	/**
-	 * consume sugar
-	 * @param available - provided by the consumed
-	 * @return not used
-	 */
-	public double consumeSugar(double available) 
-	{
-		double absorbable = (maxSugarStorable - usedSugarStorageCapacity); 
-		if(absorbable>available)
-		{
-			absorbable = available;
-		}
-		usedSugarStorageCapacity += absorbable;
-		
-		return available - absorbable;
-	}
-
-	/**
-	 * absorb
-	 * 
-	 * @param usedN
-	 * @return
-	 */
-	public double consumeNutrients(double available) {
-		double absorbable = (maxNutrientsAbsorbable - usedNutrientStorageCapacity); 
-		if(absorbable>available)
-		{
-			absorbable = available;
-		}
-		usedNutrientStorageCapacity += absorbable;
-		
-		return available - absorbable;
-	}
-
-	/**
 	 * convert biomass into nutrients and sugar
 	 * @param biomass
 	 * @return the waste
@@ -170,9 +136,7 @@ public class Animal extends Organism
 			}
 			
 			// Always use a unit of energy for the hunt
-			usedSugarStorageCapacity--;
-			// Need to free a CO2;
-			world.freeCO2(1.0);
+			useEnergy(1.0);
 			
 			if(usedSugarStorageCapacity <= 0.0)
 			{
