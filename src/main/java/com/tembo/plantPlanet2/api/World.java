@@ -586,6 +586,14 @@ public class World {
 		
 	}
 
+	public void setCO2(double d) {
+		this.freeCO2 = d;
+	}
+
+	public void setO2(double d) {
+		this.freeO2 = d;
+	}
+
 	/**
 	 * Define size in terms of resource 
 	 * TODO: Define size in terms of density of resources?
@@ -692,8 +700,14 @@ public class World {
 		double unusedSugar = decomposer.consumeSugar(usedSugar);
 		double unusedN = decomposer.consumeNutrients(usedN);
 
-		// REturn N to the world
-		this.freeNutrients(unusedN);
+		// What to do with unused stuff?, Add it back the wastes list
+		if(unusedSugar > 0.0 || unusedN > 0.0)
+		{
+			w.unusedN = unusedN;
+			w.unusedSugar = unusedSugar;
+			wastes.addLast(w);
+		}
+		
 	}
 
 	/**

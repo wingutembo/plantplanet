@@ -100,7 +100,7 @@ public class InterfaceTest extends TestCase
 			assertEquals(990.0,w.getFreeWater());
 			assertEquals(990.0,w.getFreeNutrients());
 			assertEquals(990.0,w.getFreeEnergy());
-			assertEquals(0.0,w.getFreeO2());
+			assertEquals(10.0,w.getFreeO2());
 			
 			
 		} catch (OutOfWaterException | OutOfEnergyException

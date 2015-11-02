@@ -1,6 +1,6 @@
 package com.tembo.plantPlanet2.api;
 
-class Waste {
+public class Waste {
 
 	double unusedN;
 	double unusedSugar;
