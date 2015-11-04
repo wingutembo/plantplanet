@@ -1,4 +1,4 @@
-package com.tembo.plantPlanet2.api;
+package com.tembo.plantPlanet.api;
 
 public class Waste {
 
