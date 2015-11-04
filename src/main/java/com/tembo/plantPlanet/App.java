@@ -50,15 +50,11 @@ public class App
 
     public static void main( String[] args ) throws SimSchedulingException
     {
-    	// Create the world!
-        World w = new World();
-        Plant p = w.createPlant();
-        Animal a = w.createAnimal();
-        Decomposer d = w.createDecomposer();
-        
-        // Create a Simulation
+    	// Create the simulation
     	Sim sim = new Sim();
     	
+    	// Create the world!
+        World w = new World();
     	// Day starts at 0.0
     	sim.scheduleDiscreteEvent("Day", 0.0, 2, w.createDay());
     	// Night starts at 12.0
@@ -74,25 +70,38 @@ public class App
     	// Schedule the allocation of resources
     	sim.scheduleContinuousActivity("Allocate", 1.0, 5, w.createAllocateResources());
 
-    	// Schedule the creation of stored energy
-    	sim.scheduleContinuousActivity("StoreEnergy", 1.0, 6, p.createStoreEnergy());
-    	
-    	// Hunt or Digest - Do one or the other
-    	sim.scheduleContinuousActivity("Hunt", 1.0, 7, a.createHunt());
-    	sim.scheduleContinuousActivity("Digest", 1.0, 8, d.createDigest());
-    	
-    	// Schedule the creation of stored energy
-    	sim.scheduleContinuousActivity("Grow", 1.0, 10, p.createGrow());
-    	sim.scheduleContinuousActivity("Grow", 1.0, 10, a.createGrow());
-    	sim.scheduleContinuousActivity("Grow", 1.0, 10, d.createGrow());
-
     	// Schedule the report for once a day, after everything else is update
-    	sim.scheduleContinuousActivity("World Report", 24.0, 100, w.new Report());
-		sim.scheduleContinuousActivity("P1 Report", 1.0, 18, p.createReport());
-		sim.scheduleContinuousActivity("A1 Report", 1.0, 18, a.createReport());
-		sim.scheduleContinuousActivity("D1 Report", 1.0, 18, d.createReport());
+    	sim.scheduleContinuousActivity("World Report", 24.0, 100, w.createReport());
 
-    	// Run the simulation for one year
+    	// Create the plants
+        for(int i = 1; i <= 100; i++)
+        {
+        	Plant p = w.createPlant();
+        	// Schedule the creation of stored energy
+        	sim.scheduleContinuousActivity("StoreEnergy", 1.0, 6, p.createStoreEnergy());
+        	sim.scheduleContinuousActivity("Grow", 1.0, 10, p.createGrow());
+    		sim.scheduleContinuousActivity("P1 Report", 1.0, 18, p.createReport());        	
+        }
+        
+        // Create the animals
+        for(int i = 1; i <= 1; i++)
+        {
+        	Animal a = w.createAnimal();
+        	sim.scheduleContinuousActivity("Hunt", 1.0, 7, a.createHunt());
+        	sim.scheduleContinuousActivity("Grow", 1.0, 10, a.createGrow());
+    		sim.scheduleContinuousActivity("A1 Report", 1.0, 18, a.createReport());
+        }
+        
+        // Create the decomposers
+        for(int i = 1; i <= 1; i++)
+        {
+        	Decomposer d = w.createDecomposer();
+        	sim.scheduleContinuousActivity("Digest", 1.0, 8, d.createDigest());
+        	sim.scheduleContinuousActivity("Grow", 1.0, 10, d.createGrow());
+    		sim.scheduleContinuousActivity("D1 Report", 1.0, 18, d.createReport());
+        }
+
+        // Run the simulation for one year
     	sim.runSim(365.0*24.0);
 
     }

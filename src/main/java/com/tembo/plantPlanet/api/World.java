@@ -525,7 +525,7 @@ public class World {
 				logger.info("\tTotal Atmosphere: "+freeCO2+freeO2);
 				logger.info("\t\tC02: "+freeCO2);
 				logger.info("\t\tO2: "+freeO2);
-	
+				logger.info("\tTotal Water: "+freeWater);	
 				logger.info("\tTotal Nutrients: "+freeNutrients);
 				logger.info("\tFree Energy: "+freeEnergy);
 
@@ -765,6 +765,11 @@ public class World {
 			allocateResources.unschedule(sim);
 			this.allocateResources = null;
 		}
+		if(report != null)
+		{
+			report.unschedule(sim);
+			this.report = null;
+		}
 		
 	}
 
@@ -820,6 +825,15 @@ public class World {
 			this.allocateResources = this.new AllocateResources();
 		}
 		return this.allocateResources;
+	}
+
+	private Report report = null;
+	public SimObj createReport() {
+		if(this.report == null)
+		{
+			this.report = this.new Report();
+		}
+		return this.report;
 	}
 
 }
